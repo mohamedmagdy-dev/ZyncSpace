@@ -1,57 +1,77 @@
 import AppLogo from "../components/AppLogo";
-import AuthWith from "../components/AuthWith";
+
+import FormInputs, {
+  PasswordInputWithForgot,
+  SubmitButton,
+  AuthWith,
+} from "../components/FormInputs";
+
+import useAuthStore from "../store/useAuthStore";
+
+// Lib
+import { Link, useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login, loading, error: authError } = useAuthStore();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    const res = await login(data.email, data.password);
+    if (res.success) {
+      navigate("/chat");
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="login-page flex items-center justify-center flex-col h-screen gap-5 bg-background ">
       <AppLogo />
-      <form className="rounded-md bg-white p-6 md:w-95">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="rounded-md bg-white p-6 md:w-95"
+      >
         <h1 className="text-title text-xl font-semibold mb-4">Login</h1>
-        <div className="mb-4 flex flex-col">
-          <label htmlFor="email" className="mb-2 text-title  text-sm">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="youremail@exmaple.com"
-            className="text-light-title font-medium text-sm border border-[#cbd5e1] rounded-md h-10 pl-2"
-          />
-        </div>
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <label htmlFor="password" className="text-title  text-sm ">
-              Password
-            </label>
-            <a
-              href="#"
-              className="text-blue-background text-[12px] font-semibold"
-            >
-              Forgot ?
-            </a>
-          </div>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="Password"
-            className="w-full text-light-title font-medium text-sm border border-[#cbd5e1] rounded-md h-10 pl-2"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full h-10 bg-blue-background font-bold rounded-md text-white mb-6 cursor-pointer"
-        >
-          Login
-        </button>
+        {authError && <p className="text-red-500 text-sm">{authError}</p>}
+        <FormInputs
+          id="email"
+          name="email"
+          placeholder="youremail@exmaple.com"
+          type="email"
+          label="Email Address"
+          registration={register("email", {
+            required: "Email Is Required",
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "Invalid email format",
+            },
+          })}
+          error={errors.email}
+        />
+        <PasswordInputWithForgot
+          registration={register("password", {
+            required: "Password Is Required",
+            minLength: {
+              value: 6,
+              message: "Password must be at least 6 characters",
+            },
+          })}
+          error={errors.password}
+        />
+        <SubmitButton loading={loading} title="Login" />
         <AuthWith />
       </form>
       <p className="text-light-title text-sm text-center">
         Don't have an account?{" "}
-        <a href="#" className="text-blue-title">
+        <Link to="/register" className="text-blue-title">
           Register here
-        </a>
+        </Link>
       </p>
     </div>
   );
