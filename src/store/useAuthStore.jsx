@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+} from "firebase/auth";
 
 import { auth } from "../../firebase.config";
 
@@ -13,6 +19,10 @@ const getAuthErrorMessage = (code) => {
       return "Wrong password";
     case "auth/too-many-requests":
       return "Too many requests, please try again later";
+    case "auth/popup-closed-by-user":
+      return "Sign in cancelled";
+    case "auth/credential-already-in-use":
+      return "Email already in use";
     default:
       return "Something went wrong. Please try again.";
   }
@@ -44,6 +54,35 @@ export const useAuthStore = create((set) => ({
     } catch (err) {
       set({ loading: false, error: getAuthErrorMessage(err.code) });
       return { success: false };
+    }
+  },
+
+  loginWithGoogle: async () => {
+    set({ loading: true, error: null });
+    const provider = new GoogleAuthProvider();
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      set({ user: result.user, loading: false });
+      return { success: true };
+    } catch (err) {
+      set({ loading: false, error: getAuthErrorMessage(err.code) });
+      return { success: false };
+    }
+  },
+
+  loginWithFacebook: async () => {
+    set({ loading: true, error: null });
+    const provider = new FacebookAuthProvider();
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      set({ user: result.user, loading: false });
+
+      return { success: true };
+    } catch (err) {
+      set({ loading: false, error: getAuthErrorMessage(err.code) });
+      return { success: false};
     }
   },
 }));

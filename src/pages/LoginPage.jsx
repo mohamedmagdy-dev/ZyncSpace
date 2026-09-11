@@ -14,7 +14,13 @@ import { useForm } from "react-hook-form";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, loading, error: authError } = useAuthStore();
+  const {
+    login,
+    loading,
+    error: authError,
+    loginWithGoogle,
+    loginWithFacebook,
+  } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -23,6 +29,20 @@ export default function LoginPage() {
 
   const onSubmit = async (data) => {
     const res = await login(data.email, data.password);
+    if (res.success) {
+      navigate("/chat");
+    }
+  };
+
+  const handleLoginWithGoogle = async () => {
+    const res = await loginWithGoogle();
+    if (res.success) {
+      navigate("/chat");
+    }
+  };
+
+  const handleLoginWithFacebook = async () => {
+    const res = await loginWithFacebook();
     if (res.success) {
       navigate("/chat");
     }
@@ -69,7 +89,11 @@ export default function LoginPage() {
         {authError && (
           <p className="text-red-500 text-sm mb-6 text-center">{authError}</p>
         )}
-        <AuthWith />
+        <AuthWith
+          onGoogleClick={handleLoginWithGoogle}
+          onFacebookClick={handleLoginWithFacebook}
+          loading={loading}
+        />
       </form>
       <p className="text-light-title text-sm text-center">
         Don't have an account?{" "}
