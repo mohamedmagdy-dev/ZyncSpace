@@ -20,7 +20,7 @@ export default function FormInputs({
         {...registration}
         className="text-light-title font-medium text-sm border border-[#cbd5e1] rounded-md h-10 pl-2"
       />
-      {error && <p className="text-red-500 text-sm">{error.message}</p>}
+      {error && <p className="text-red-500 text-sm mt-2">{error.message}</p>}
     </div>
   );
 }
@@ -56,7 +56,7 @@ export function Button({ loading, title, type, loadingTitle }) {
     <button
       disabled={loading}
       type={type}
-      className="w-full h-10 bg-blue-background font-bold rounded-md text-white mb-6 cursor-pointer"
+      className="w-full h-10 bg-blue-background font-bold rounded-md text-white  cursor-pointer"
     >
       {loading ? loadingTitle : title}
     </button>
@@ -65,7 +65,7 @@ export function Button({ loading, title, type, loadingTitle }) {
 
 export function AuthWith({ onGoogleClick, onFacebookClick, loading }) {
   return (
-    <div className="pt-6 border-t border-gray-background">
+    <div className="pt-6 border-t border-gray-background mt-4">
       <h2 className="text-center mb-2 text-light-title text-[11px] font-bold">
         OR USE WITH
       </h2>

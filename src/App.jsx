@@ -3,6 +3,7 @@ import "./styles/App.css";
 // Pages
 import LoginPage from "./pages/LoginPage";
 import ChatPage from "./pages/ChatPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -11,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Routes, Route } from "react-router";
 import { useEffect } from "react";
 import useAuthStore from "./store/useAuthStore";
+import { Toaster } from "sonner";
 
 export default function App() {
   const { initAuth } = useAuthStore();
@@ -21,8 +23,19 @@ export default function App() {
 
   return (
     <>
+      <Toaster
+        toastOptions={{
+          style: {
+            color: "#DBEAFE",
+            background: "#475569",
+            fontWeight: "bold",
+            fontSize: "16px",
+          },
+        }}
+      />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route
           path="/chat"

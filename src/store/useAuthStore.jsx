@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   FacebookAuthProvider,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 import { auth } from "../../firebase.config";
@@ -82,7 +83,19 @@ export const useAuthStore = create((set) => ({
       return { success: true };
     } catch (err) {
       set({ loading: false, error: getAuthErrorMessage(err.code) });
-      return { success: false};
+      return { success: false };
+    }
+  },
+
+  resetPassword: async (email) => {
+    set({ loading: true, error: null });
+    try {
+      await sendPasswordResetEmail(auth, email);
+      set({ loading: false });
+      return { success: true };
+    } catch (err) {
+      set({ loading: false, error: getAuthErrorMessage(err.code) });
+      return { success: false };
     }
   },
 }));

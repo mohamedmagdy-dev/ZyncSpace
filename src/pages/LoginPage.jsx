@@ -87,7 +87,7 @@ export default function LoginPage() {
           loadingTitle="Logging in..."
         />
         {authError && (
-          <p className="text-red-500 text-sm mb-6 text-center">{authError}</p>
+          <p className="text-red-500 text-sm my-4 text-center">{authError}</p>
         )}
         <AuthWith
           onGoogleClick={handleLoginWithGoogle}
