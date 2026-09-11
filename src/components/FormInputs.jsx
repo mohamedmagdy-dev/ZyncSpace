@@ -2,7 +2,6 @@ import { Link } from "react-router";
 
 export default function FormInputs({
   id,
-  name,
   placeholder,
   type,
   label,
@@ -17,7 +16,6 @@ export default function FormInputs({
       <input
         type={type}
         id={id}
-        name={name}
         placeholder={placeholder}
         {...registration}
         className="text-light-title font-medium text-sm border border-[#cbd5e1] rounded-md h-10 pl-2"
@@ -44,24 +42,23 @@ export function PasswordInputWithForgot({ error, registration }) {
       <input
         type="password"
         id="password"
-        name="password"
         placeholder="Password"
         {...registration}
         className="w-full text-light-title font-medium text-sm border border-[#cbd5e1] rounded-md h-10 pl-2"
       />
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error.message}</p>}
     </div>
   );
 }
 
-export function SubmitButton({ loading, title }) {
+export function Button({ loading, title, type, loadingTitle }) {
   return (
     <button
       disabled={loading}
-      type="submit"
+      type={type}
       className="w-full h-10 bg-blue-background font-bold rounded-md text-white mb-6 cursor-pointer"
     >
-      {loading ? "Logging in..." : title}
+      {loading ? loadingTitle : title}
     </button>
   );
 }

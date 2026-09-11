@@ -2,7 +2,7 @@ import AppLogo from "../components/AppLogo";
 
 import FormInputs, {
   PasswordInputWithForgot,
-  SubmitButton,
+  Button,
   AuthWith,
 } from "../components/FormInputs";
 
@@ -25,8 +25,6 @@ export default function LoginPage() {
     const res = await login(data.email, data.password);
     if (res.success) {
       navigate("/chat");
-    } else {
-      navigate("/login");
     }
   };
 
@@ -38,10 +36,8 @@ export default function LoginPage() {
         className="rounded-md bg-white p-6 md:w-95"
       >
         <h1 className="text-title text-xl font-semibold mb-4">Login</h1>
-        {authError && <p className="text-red-500 text-sm">{authError}</p>}
         <FormInputs
           id="email"
-          name="email"
           placeholder="youremail@exmaple.com"
           type="email"
           label="Email Address"
@@ -64,7 +60,15 @@ export default function LoginPage() {
           })}
           error={errors.password}
         />
-        <SubmitButton loading={loading} title="Login" />
+        <Button
+          type="submit"
+          loading={loading}
+          title="Login"
+          loadingTitle="Logging in..."
+        />
+        {authError && (
+          <p className="text-red-500 text-sm mb-6 text-center">{authError}</p>
+        )}
         <AuthWith />
       </form>
       <p className="text-light-title text-sm text-center">
