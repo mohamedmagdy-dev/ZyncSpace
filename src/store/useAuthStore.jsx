@@ -9,8 +9,9 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-import { auth } from "../../firebase.config";
+import { auth, db } from "../../firebase.config";
 
 const getAuthErrorMessage = (code) => {
   switch (code) {
@@ -49,6 +50,22 @@ const getAuthErrorMessage = (code) => {
   }
 };
 
+const saveUserToFireStore = async (user, customUsername = null) => {
+  if (!user?.uid) return;
+  await setDoc(
+    doc(db, "users", user.uid),
+    {
+      uid: user.uid,
+      displayName:
+        customUsername || user.displayName || user.email?.split("@")[0],
+      email: user.email,
+      photoURL: user.photoURL || null,
+      createdAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+};
+
 export const useAuthStore = create((set) => ({
   user: null,
   loading: false,
@@ -73,6 +90,8 @@ export const useAuthStore = create((set) => ({
       if (username) {
         await updateProfile(userCredential.user, { displayName: username });
       }
+      await saveUserToFireStore(userCredential.user, username);
+
       set({ user: userCredential.user, loading: false });
       return { success: true };
     } catch (err) {
@@ -105,6 +124,7 @@ export const useAuthStore = create((set) => ({
     try {
       const result = await signInWithPopup(auth, provider);
       set({ user: result.user, loading: false });
+      await saveUserToFireStore(result.user);
       return { success: true };
     } catch (err) {
       set({ loading: false, error: getAuthErrorMessage(err.code) });
@@ -119,7 +139,7 @@ export const useAuthStore = create((set) => ({
     try {
       const result = await signInWithPopup(auth, provider);
       set({ user: result.user, loading: false });
-
+      await saveUserToFireStore(result.user);
       return { success: true };
     } catch (err) {
       set({ loading: false, error: getAuthErrorMessage(err.code) });
