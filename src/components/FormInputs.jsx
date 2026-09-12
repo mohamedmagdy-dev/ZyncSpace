@@ -1,4 +1,6 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+
+import useAuthStore from "../store/useAuthStore";
 
 export default function FormInputs({
   id,
@@ -9,7 +11,7 @@ export default function FormInputs({
   registration,
 }) {
   return (
-    <div className="mb-4 flex flex-col">
+    <div className="mb-4 flex flex-col w-full">
       <label htmlFor={id} className="mb-2 text-title  text-sm">
         {label}
       </label>
@@ -28,7 +30,7 @@ export default function FormInputs({
 export function PasswordInputWithForgot({ error, registration }) {
   return (
     <div className="mb-4">
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-2 ">
         <label htmlFor="password" className="text-title  text-sm ">
           Password
         </label>
@@ -63,16 +65,33 @@ export function Button({ loading, title, type, loadingTitle }) {
   );
 }
 
-export function AuthWith({ onGoogleClick, onFacebookClick, loading }) {
+export function AuthWith({ title }) {
+  const { loading, loginWithGoogle, loginWithFacebook } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLoginWithGoogle = async () => {
+    const res = await loginWithGoogle();
+    if (res.success) {
+      navigate("/chat");
+    }
+  };
+
+  const handleLoginWithFacebook = async () => {
+    const res = await loginWithFacebook();
+    if (res.success) {
+      navigate("/chat");
+    }
+  };
+
   return (
     <div className="pt-6 border-t border-gray-background mt-4">
       <h2 className="text-center mb-2 text-light-title text-[11px] font-bold">
-        OR USE WITH
+        {title}
       </h2>
       <div className="flex justify-between items-center gap-3">
         <button
           disabled={loading}
-          onClick={onGoogleClick}
+          onClick={handleLoginWithGoogle}
           type="button"
           className="w-full px-4 py-2 h-10 font-medium text-title rounded-md bg-gray-background cursor-pointer"
         >
@@ -80,7 +99,7 @@ export function AuthWith({ onGoogleClick, onFacebookClick, loading }) {
         </button>
         <button
           disabled={loading}
-          onClick={onFacebookClick}
+          onClick={handleLoginWithFacebook}
           type="button"
           className="w-full px-4 py-2 h-10 font-medium text-title rounded-md bg-gray-background cursor-pointer"
         >

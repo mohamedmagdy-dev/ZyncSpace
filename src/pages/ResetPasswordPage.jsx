@@ -28,7 +28,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="reset-password-page flex items-center justify-center flex-col h-screen gap-5 bg-background ">
+    <div className="reset-password-page flex items-center justify-center flex-col min-h-screen py-8 gap-5 bg-background p-3">
       <AppLogo />
 
       <form

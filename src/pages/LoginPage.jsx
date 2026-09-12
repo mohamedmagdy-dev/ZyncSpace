@@ -11,16 +11,11 @@ import useAuthStore from "../store/useAuthStore";
 // Lib
 import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const {
-    login,
-    loading,
-    error: authError,
-    loginWithGoogle,
-    loginWithFacebook,
-  } = useAuthStore();
+  const { login, loading, error: authError, clearError } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -34,22 +29,12 @@ export default function LoginPage() {
     }
   };
 
-  const handleLoginWithGoogle = async () => {
-    const res = await loginWithGoogle();
-    if (res.success) {
-      navigate("/chat");
-    }
-  };
-
-  const handleLoginWithFacebook = async () => {
-    const res = await loginWithFacebook();
-    if (res.success) {
-      navigate("/chat");
-    }
-  };
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   return (
-    <div className="login-page flex items-center justify-center flex-col h-screen gap-5 bg-background ">
+    <div className="login-page flex items-center justify-center flex-col min-h-screen py-8 gap-5 bg-background p-3">
       <AppLogo />
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -58,7 +43,7 @@ export default function LoginPage() {
         <h1 className="text-title text-xl font-semibold mb-4">Login</h1>
         <FormInputs
           id="email"
-          placeholder="youremail@exmaple.com"
+          placeholder="youremail@example.com"
           type="email"
           label="Email Address"
           registration={register("email", {
@@ -89,11 +74,7 @@ export default function LoginPage() {
         {authError && (
           <p className="text-red-500 text-sm my-4 text-center">{authError}</p>
         )}
-        <AuthWith
-          onGoogleClick={handleLoginWithGoogle}
-          onFacebookClick={handleLoginWithFacebook}
-          loading={loading}
-        />
+        <AuthWith title="OR USE WITH" />
       </form>
       <p className="text-light-title text-sm text-center">
         Don't have an account?{" "}
