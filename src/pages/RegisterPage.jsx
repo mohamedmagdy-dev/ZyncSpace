@@ -3,11 +3,10 @@ import AppLogo from "../components/AppLogo";
 import FormInputs, { Button, AuthWith } from "../components/FormInputs";
 
 import useAuthStore from "../store/useAuthStore";
-
-// Lib
 import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { compressImageToBase64 } from "../lib/imageUtils";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -18,6 +17,10 @@ export default function RegisterPage() {
     clearError,
   } = useAuthStore();
 
+  const [photoBase64, setPhotoBase64] = useState(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
   const {
     register,
     handleSubmit,
@@ -25,8 +28,22 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm();
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoLoading(true);
+    try {
+      const base64 = await compressImageToBase64(file, 240, 0.8);
+      setPhotoBase64(base64);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
   const onSubmit = async (data) => {
-    const res = await createAccount(data.username, data.email, data.password);
+    const res = await createAccount(data.username, data.email, data.password, photoBase64);
     if (res.success) {
       navigate("/chat");
     }
@@ -43,9 +60,38 @@ export default function RegisterPage() {
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-md bg-white p-6 md:w-xl"
       >
-        <h1 className="text-title text-xl font-semibold mb-4">
+        <h1 className="text-title text-xl font-semibold mb-4 text-center">
           Create Account
         </h1>
+
+        <div className="flex flex-col items-center justify-center mb-6">
+          <div className="relative w-20 h-20 group">
+            <img
+              src={photoBase64 || defaultAvatar}
+              alt="Profile avatar"
+              className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 shadow-sm"
+            />
+            <label
+              htmlFor="avatar-upload"
+              className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition"
+            >
+              <span className="text-xs font-semibold">Upload</span>
+            </label>
+            <input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </div>
+          <label
+            htmlFor="avatar-upload"
+            className="text-xs text-blue-600 font-semibold mt-2 cursor-pointer hover:underline"
+          >
+            {photoLoading ? "Processing..." : photoBase64 ? "Change Photo" : "Upload Photo"}
+          </label>
+        </div>
 
         <div className="flex flex-col md:flex-row gap-0 md:gap-6">
           <FormInputs

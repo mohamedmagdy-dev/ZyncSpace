@@ -8,14 +8,14 @@ import {
   sendPasswordResetEmail,
   createUserWithEmailAndPassword,
   updateProfile,
+  signOut,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 import { auth, db } from "../../firebase.config";
 
 const getAuthErrorMessage = (code) => {
   switch (code) {
-    // Register
     case "auth/email-already-in-use":
       return "This email is already registered.";
     case "auth/weak-password":
@@ -23,15 +23,13 @@ const getAuthErrorMessage = (code) => {
     case "auth/invalid-email":
       return "Invalid email address.";
 
-    // Login
     case "auth/invalid-credential":
-    case "auth/user-not-found":
+      case "auth/user-not-found":
     case "auth/wrong-password":
       return "Invalid email or password.";
     case "auth/user-disabled":
       return "This account has been disabled. Please contact support.";
 
-    // Social / Popup
     case "auth/popup-closed-by-user":
       return "Sign-in was cancelled.";
     case "auth/popup-blocked":
@@ -39,7 +37,6 @@ const getAuthErrorMessage = (code) => {
     case "auth/account-exists-with-different-credential":
       return "An account already exists with the same email address.";
 
-    // General & Network
     case "auth/too-many-requests":
       return "Too many failed attempts. Please try again later.";
     case "auth/network-request-failed":
@@ -50,20 +47,21 @@ const getAuthErrorMessage = (code) => {
   }
 };
 
-const saveUserToFireStore = async (user, customUsername = null) => {
+const saveUserToFireStore = async (user, customUsername = null, photoURL = null) => {
   if (!user?.uid) return;
-  await setDoc(
-    doc(db, "users", user.uid),
-    {
-      uid: user.uid,
-      displayName:
-        customUsername || user.displayName || user.email?.split("@")[0],
-      email: user.email,
-      photoURL: user.photoURL || null,
-      createdAt: serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const data = {
+    uid: user.uid,
+    displayName:
+      customUsername || user.displayName || user.email?.split("@")[0],
+    email: user.email,
+    createdAt: serverTimestamp(),
+  };
+  if (photoURL !== null) {
+    data.photoURL = photoURL;
+  } else if (user.photoURL) {
+    data.photoURL = user.photoURL;
+  }
+  await setDoc(doc(db, "users", user.uid), data, { merge: true });
 };
 
 export const useAuthStore = create((set) => ({
@@ -73,12 +71,33 @@ export const useAuthStore = create((set) => ({
   authReady: false,
 
   initAuth: () => {
-    onAuthStateChanged(auth, (currentUser) => {
-      set({ user: currentUser, authReady: true });
+    onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            set({
+              user: {
+                ...currentUser,
+                displayName: userData.displayName || currentUser.displayName,
+                photoURL: userData.photoURL || currentUser.photoURL,
+              },
+              authReady: true,
+            });
+            return;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        set({ user: currentUser, authReady: true });
+      } else {
+        set({ user: null, authReady: true });
+      }
     });
   },
 
-  register: async (username, email, password) => {
+  register: async (username, email, password, photoBase64 = null) => {
     set({ loading: true, error: null });
 
     try {
@@ -90,9 +109,16 @@ export const useAuthStore = create((set) => ({
       if (username) {
         await updateProfile(userCredential.user, { displayName: username });
       }
-      await saveUserToFireStore(userCredential.user, username);
+      await saveUserToFireStore(userCredential.user, username, photoBase64);
 
-      set({ user: userCredential.user, loading: false });
+      set({
+        user: {
+          ...userCredential.user,
+          displayName: username || userCredential.user.email?.split("@")[0],
+          photoURL: photoBase64,
+        },
+        loading: false,
+      });
       return { success: true };
     } catch (err) {
       set({ loading: false, error: getAuthErrorMessage(err.code) });
@@ -155,6 +181,48 @@ export const useAuthStore = create((set) => ({
       return { success: true };
     } catch (err) {
       set({ loading: false, error: getAuthErrorMessage(err.code) });
+      return { success: false };
+    }
+  },
+
+  logout: async () => {
+    set({ loading: true, error: null });
+    try {
+      await signOut(auth);
+      set({ user: null, loading: false });
+      return { success: true };
+    } catch (err) {
+      set({ loading: false, error: getAuthErrorMessage(err.code) });
+      return { success: false };
+    }
+  },
+
+  updateUserProfile: async ({ displayName, photoURL }) => {
+    set({ loading: true, error: null });
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return { success: false };
+
+      const updates = {};
+      if (displayName) updates.displayName = displayName;
+      if (photoURL) updates.photoURL = photoURL;
+
+      if (displayName) {
+        await updateProfile(currentUser, { displayName });
+      }
+
+      await setDoc(doc(db, "users", currentUser.uid), updates, { merge: true });
+
+      set((state) => ({
+        user: {
+          ...state.user,
+          ...updates,
+        },
+        loading: false,
+      }));
+      return { success: true };
+    } catch (err) {
+      set({ loading: false, error: err.message });
       return { success: false };
     }
   },

@@ -1,11 +1,8 @@
-// Component
 import AppLogo from "../components/AppLogo";
 import FormInputs, { Button } from "../components/FormInputs";
 
-// Store
 import useAuthStore from "../store/useAuthStore";
 
-// Lib
 import { Link } from "react-router";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

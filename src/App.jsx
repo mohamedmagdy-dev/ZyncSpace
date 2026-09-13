@@ -1,15 +1,12 @@
 import "./styles/App.css";
 
-// Pages
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ChatPage from "./pages/ChatPage";
 
-// components
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Lib
 import { Routes, Route } from "react-router";
 import { useEffect } from "react";
 import useAuthStore from "./store/useAuthStore";
@@ -35,11 +32,40 @@ export default function App() {
         }}
       />
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/login"
+          element={
+            <ProtectedRoute guestOnly>
+              <LoginPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <ProtectedRoute guestOnly>
+              <ResetPasswordPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute guestOnly>
+              <RegisterPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/"
           element={
             <ProtectedRoute>
               <ChatPage />

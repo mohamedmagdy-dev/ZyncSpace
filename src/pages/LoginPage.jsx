@@ -7,8 +7,6 @@ import FormInputs, {
 } from "../components/FormInputs";
 
 import useAuthStore from "../store/useAuthStore";
-
-// Lib
 import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";

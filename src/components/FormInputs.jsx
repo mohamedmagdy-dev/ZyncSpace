@@ -109,3 +109,17 @@ export function AuthWith({ title }) {
     </div>
   );
 }
+
+
+export function SearchContactInput({ id = "search", register, placeholder, ...rest }) {
+  return (
+    <input
+      type="text"
+      id={id}
+      placeholder={placeholder}
+      {...register}
+      {...rest}
+      className="border border-background w-full rounded-full py-2 px-5 mb-4 text-sm outline-none"
+    />
+  );
+}
